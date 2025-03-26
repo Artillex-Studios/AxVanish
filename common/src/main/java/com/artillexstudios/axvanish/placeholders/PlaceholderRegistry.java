@@ -11,27 +11,17 @@ public enum PlaceholderRegistry {
     INSTANCE;
 
     public void register() {
-        Placeholders.registerTransformer(OfflinePlayer.class, User.class, player -> {
-            return AxVanishAPI.instance().getUserIfLoadedImmediately(player);
-        });
+        Placeholders.registerTransformer(OfflinePlayer.class, User.class, player -> AxVanishAPI.instance().getUserIfLoadedImmediately(player));
 
-        Placeholders.register("online", ctx -> {
-            return Integer.toString(Bukkit.getOnlinePlayers().size() - AxVanishAPI.instance().vanished().size());
-        }, ParseContext.PLACEHOLDER_API);
+        Placeholders.register("online", ctx -> Integer.toString(Bukkit.getOnlinePlayers().size() - AxVanishAPI.instance().vanished().size()), ParseContext.PLACEHOLDER_API);
 
-        Placeholders.register("vanished", ctx -> {
-            return Integer.toString(AxVanishAPI.instance().vanished().size());
-        }, ParseContext.PLACEHOLDER_API);
+        Placeholders.register("vanished", ctx -> Integer.toString(AxVanishAPI.instance().vanished().size()), ParseContext.PLACEHOLDER_API);
 
-        Placeholders.register("vanished_players", ctx -> {
-            return String.join(", ", AxVanishAPI.instance().vanished()
-                    .stream()
-                    .map(user -> {
-                        return user.onlinePlayer().getName();
-                    })
-                    .toList()
-            );
-        }, ParseContext.PLACEHOLDER_API);
+        Placeholders.register("vanished_players", ctx -> String.join(", ", AxVanishAPI.instance().vanished()
+                .stream()
+                .map(user -> user.onlinePlayer().getName())
+                .toList()
+        ), ParseContext.PLACEHOLDER_API);
 
         Placeholders.register("state", ctx -> {
             User user = ctx.resolve(User.class);

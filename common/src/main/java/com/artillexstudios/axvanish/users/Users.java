@@ -47,8 +47,7 @@ public final class Users {
 
     public static CompletableFuture<User> loadUser(UUID uuid) throws UserAlreadyLoadedException {
         if (loadedUsers.containsKey(uuid)) {
-            User loaded = loadedUsers.get(uuid);
-            loadedUsers.put(uuid, loaded);
+            loadedUsers.compute(uuid, (k, loaded) -> loaded);
             LogUtils.warn("User was already loaded, falling back to already created user instance!");
             throw new UserAlreadyLoadedException();
         }
@@ -99,6 +98,8 @@ public final class Users {
 
         if (user != null) {
             tempUsers.put(uuid, user);
+        } else {
+            unsaved.removeIf(u -> u.player().getUniqueId().equals(uuid));
         }
 
         return user;

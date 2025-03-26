@@ -81,13 +81,10 @@ public final class Config implements ConfigurationPart {
 
         if (this.config == null) {
             this.config = YamlConfiguration.of(path, Config.class).configVersion(1, "config-version").withDumperOptions(options -> {
-//                        options.setPrettyFlow(true);
-//                        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
             }).build();
         }
 
         this.config.load();
         return true;
     }
-
 }
