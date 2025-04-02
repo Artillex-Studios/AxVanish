@@ -41,7 +41,6 @@ public final class DataHandler {
 
         futures.add(teams.toCompletableFuture());
 
-
         if (Config.database.type == DatabaseType.SQLITE) {
             CompletableFuture<Integer> pragma = new CompletableFuture<>();
             AsyncUtils.executor().submit(() -> {

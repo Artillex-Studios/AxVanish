@@ -254,7 +254,7 @@ public final class PreventCapability extends VanishCapability implements Listene
                 .stream()
                 .filter(user -> {
                     PreventCapability capability = user.capability(VanishCapabilities.PREVENT);
-                    if (capability.prevents("tab_complete")) {
+                    if (capability != null && capability.prevents("tab_complete")) {
                         return user.onlinePlayer() != null && !completer.canSee(user);
                     }
 
@@ -285,7 +285,7 @@ public final class PreventCapability extends VanishCapability implements Listene
                 .stream()
                 .filter(user -> {
                     PreventCapability capability = user.capability(VanishCapabilities.PREVENT);
-                    if (capability.prevents("command_use")) {
+                    if (capability != null && capability.prevents("command_use")) {
                         return user.onlinePlayer() != null && !executor.canSee(user);
                     }
 

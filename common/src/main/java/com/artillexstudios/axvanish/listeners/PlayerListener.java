@@ -41,8 +41,6 @@ public final class PlayerListener implements Listener {
             User user = Users.loadUser(event.getUniqueId()).join();
             this.logger.log("User %s asyncplayerpreloginevent finished!".formatted(event.getName()));
         } catch (UserAlreadyLoadedException exception) {
-//            event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
-//            event.setKickMessage(StringUtils.formatToString(Language.prefix + Language.error.failedToLoadUserData));
             this.logger.log("UserAlreadyLoadedException for user: %s. How did this happen?".formatted(event.getName()));
         }
     }
@@ -78,6 +76,10 @@ public final class PlayerListener implements Listener {
         Player player = event.getPlayer();
         User user = Users.disconnect(player.getUniqueId());
         this.logger.log("User disconnect: %s.".formatted(event.getPlayer().getName()));
+
+        if (user == null) {
+            return;
+        }
 
         user.update(user.vanished(), new VanishContext.Builder()
                 .withSource(DisconnectVanishSource.INSTANCE)
