@@ -50,7 +50,7 @@ public final class PlayerListener implements Listener {
         }
 
         try {
-            User user = Users.loadUser(event.getUniqueId()).get(5, TimeUnit.SECONDS);
+            Users.loadUser(event.getUniqueId()).get(5, TimeUnit.SECONDS);
             if (Config.debug) {
                 this.logger.log("User %s asyncplayerpreloginevent finished!".formatted(event.getName()));
             }

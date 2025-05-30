@@ -1,29 +1,28 @@
 package com.artillexstudios.axvanish.api.group.capabilities;
 
+import com.artillexstudios.axapi.scheduler.Scheduler;
 import com.artillexstudios.axvanish.api.AxVanishAPI;
 import com.artillexstudios.axvanish.api.users.User;
-import com.artillexstudios.axapi.scheduler.Scheduler;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class SilentOpenCapability extends VanishCapability implements Listener {
-    private static final Map<UUID, Inventory> inventories = new HashMap<>();
-    private static final Map<UUID, Location> locations = new HashMap<>();
+    private static final Map<UUID, Container> trackedInventories = new ConcurrentHashMap<>();
 
     public SilentOpenCapability(Map<String, Object> config) {
         super(config);
@@ -31,58 +30,57 @@ public final class SilentOpenCapability extends VanishCapability implements List
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerInteractEvent(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
         Player player = event.getPlayer();
         User user = AxVanishAPI.instance().userOrThrow(player);
         if (!user.hasCapability(VanishCapabilities.SILENT_OPEN)) {
             return;
         }
 
-        Block clickedBlock = event.getClickedBlock();
-        if (clickedBlock == null) {
+        Block block = event.getClickedBlock();
+        if (block == null
+                || block.getType() == Material.BLAST_FURNACE
+                || block.getType() == Material.BREWING_STAND
+                || block.getType() == Material.FURNACE
+                || block.getType() == Material.HOPPER
+                || block.getType() == Material.SMOKER) {
             return;
         }
 
         event.setCancelled(true);
-        Location location = clickedBlock.getLocation();
-
-        Scheduler.get().runAt(location, task -> {
-            Block block = location.getBlock();
-
+        Scheduler.get().runAt(block.getLocation(), () -> {
             if (!(block.getState() instanceof Container container)) {
                 return;
             }
 
             Inventory original = container.getInventory();
-            InventoryType type = original.getType();
-            String title = container.getCustomName() == null ? type.getDefaultTitle() : container.getCustomName();
+            String title = container.getCustomName() != null ? container.getCustomName() : original.getType().getDefaultTitle();
 
-            Inventory copy;
-            if (type == InventoryType.BARREL || type == InventoryType.CHEST || type == InventoryType.ENDER_CHEST) {
-                copy = Bukkit.createInventory(null, original.getSize(), title);
-            } else {
-                copy = Bukkit.createInventory(null, type, title);
-            }
+            Inventory fakeInventory = Bukkit.createInventory(null, original.getSize(), title);
+            fakeInventory.setContents(original.getContents());
 
-            copy.setContents(original.getContents());
-            inventories.put(player.getUniqueId(), original);
-            locations.put(player.getUniqueId(), location);
-
-            Inventory finalCopy = copy;
-            Scheduler.get().runAt(player.getLocation(), scheduledTask -> player.openInventory(finalCopy));
+            trackedInventories.put(player.getUniqueId(), container);
+            player.openInventory(fakeInventory);
         });
     }
 
     @EventHandler
     public void onInventoryCloseEvent(InventoryCloseEvent event) {
-        UUID playerId = event.getPlayer().getUniqueId();
-        Inventory original = inventories.remove(playerId);
-        Location location = locations.remove(playerId);
-        if (original == null || location == null) return;
+        UUID uuid = event.getPlayer().getUniqueId();
+        Container container = trackedInventories.remove(uuid);
+        if (container == null) {
+            return;
+        }
 
-        ItemStack[] contents = event.getView().getTopInventory().getContents().clone();
+        Inventory source = container.getInventory();
+        Inventory view = event.getView().getTopInventory();
+        ItemStack[] newContents = view.getContents();
 
-        Scheduler.get().runAt(location, task ->
-                original.setContents(contents)
-        );
+        for (int i = 0; i < source.getSize(); i++) {
+            source.setItem(i, i < newContents.length ? newContents[i] : null);
+        }
     }
 }

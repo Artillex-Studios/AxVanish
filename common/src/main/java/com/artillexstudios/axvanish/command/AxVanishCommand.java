@@ -43,7 +43,6 @@ public final class AxVanishCommand {
 
     public void enable() {
         CommandAPI.onEnable();
-
     }
 
     public void disable() {
