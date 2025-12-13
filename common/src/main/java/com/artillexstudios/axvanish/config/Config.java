@@ -52,6 +52,11 @@ public final class Config implements ConfigurationPart {
             """)
     public static int asyncUtilsThreadCount = 1;
     @Comment("""
+            Automatically set players vanished when they join the server.
+            Only applies to players who have the permission 'axvanish.vanish'.
+            """)
+    public static boolean autoVanishOnJoin = false;
+    @Comment("""
             The cooldown between sending the player the prohibited action message.
             This is in milliseconds.
             """)

@@ -74,6 +74,7 @@ public final class PlayerListener implements Listener {
         User user = AxVanishAPI.instance().userOrThrow(player);
         ((com.artillexstudios.axvanish.users.User) user).onlinePlayer(player);
         ((com.artillexstudios.axvanish.users.User) user).group(PermissionUtils.INSTANCE.group(player));
+        // If the user was previously vanished but no longer has permission, force unvanish them
         if (user.vanished() && !player.hasPermission("axvanish.vanish")) {
             user.update(false, new VanishContext.Builder()
                     .withSource(JoinVanishSource.INSTANCE)
@@ -85,7 +86,13 @@ public final class PlayerListener implements Listener {
             return;
         }
 
-        user.update(user.vanished(), new VanishContext.Builder()
+        // Auto-vanish on join if enabled and player has the vanish permission
+        boolean targetVanished = user.vanished();
+        if (Config.autoVanishOnJoin && player.hasPermission("axvanish.vanish")) {
+            targetVanished = true;
+        }
+
+        user.update(targetVanished, new VanishContext.Builder()
                 .withSource(JoinVanishSource.INSTANCE)
                 .build()
         );
