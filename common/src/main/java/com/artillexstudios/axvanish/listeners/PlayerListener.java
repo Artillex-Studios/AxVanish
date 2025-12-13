@@ -9,6 +9,7 @@ import com.artillexstudios.axvanish.api.context.source.DisconnectVanishSource;
 import com.artillexstudios.axvanish.api.context.source.ForceVanishSource;
 import com.artillexstudios.axvanish.api.context.source.JoinVanishSource;
 import com.artillexstudios.axvanish.api.users.User;
+import com.artillexstudios.axvanish.api.group.capabilities.VanishCapabilities;
 import com.artillexstudios.axvanish.config.Config;
 import com.artillexstudios.axvanish.config.Language;
 import com.artillexstudios.axvanish.exception.UserAlreadyLoadedException;
@@ -86,9 +87,11 @@ public final class PlayerListener implements Listener {
             return;
         }
 
-        // Auto-vanish on join if enabled and player has the vanish permission
+        // Auto-vanish on join if the user's group has the capability and player has the vanish permission
         boolean targetVanished = user.vanished();
-        if (Config.autoVanishOnJoin && player.hasPermission("axvanish.vanish")) {
+        if (user.group() != null
+                && user.group().hasCapability(VanishCapabilities.VANISH_ON_JOIN)
+                && player.hasPermission("axvanish.vanish")) {
             targetVanished = true;
         }
 

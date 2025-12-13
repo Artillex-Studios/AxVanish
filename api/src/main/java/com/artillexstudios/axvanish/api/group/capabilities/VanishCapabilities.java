@@ -19,6 +19,7 @@ public final class VanishCapabilities {
     public static final Class<PotionEffectsCapability> POTION_EFFECTS = register("potion_effects", PotionEffectsCapability.class);
     public static final Class<PreventCapability> PREVENT = register("prevent", PreventCapability.class);
     public static final Class<SilentOpenCapability> SILENT_OPEN = register("silent_open", SilentOpenCapability.class);
+    public static final Class<VanishOnJoinCapability> VANISH_ON_JOIN = register("vanish_on_join", VanishOnJoinCapability.class);
 
     public static <T extends VanishCapability> Class<T> register(String key, Class<T> capability) {
         capabilities.put(key, capability);

@@ -2,6 +2,8 @@ groups:
   default:
     priority: 1 # Higher priorities can see lower priorities
     capabilities:
+      # Enable this to automatically vanish members of this group when they join (if they have permission 'axvanish.vanish')
+      # - type: vanish_on_join
       - type: silent_open
       - type: invincible
       - type: flight
