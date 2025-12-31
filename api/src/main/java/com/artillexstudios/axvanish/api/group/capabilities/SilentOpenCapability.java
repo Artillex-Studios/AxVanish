@@ -1,10 +1,15 @@
 package com.artillexstudios.axvanish.api.group.capabilities;
 
+import com.artillexstudios.axapi.packet.ClientboundPacketTypes;
 import com.artillexstudios.axapi.packet.PacketEvent;
 import com.artillexstudios.axapi.packet.PacketEvents;
 import com.artillexstudios.axapi.packet.PacketListener;
+import com.artillexstudios.axapi.packet.wrapper.clientbound.ClientboundSoundWrapper;
 import com.artillexstudios.axapi.scheduler.Scheduler;
+import com.artillexstudios.axapi.utils.logging.LogUtils;
+import com.artillexstudios.axapi.utils.position.ImmutableBlockPosition;
 import com.artillexstudios.axvanish.api.AxVanishAPI;
+import com.artillexstudios.axvanish.api.group.packet.ClientboundBlockEventWrapper;
 import com.artillexstudios.axvanish.api.users.User;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -14,17 +19,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class SilentOpenCapability extends VanishCapability implements Listener {
-
-    private static final Set<UUID> silentViewers = ConcurrentHashMap.newKeySet();
+    private static final Set<ImmutableBlockPosition> silentViewers = ConcurrentHashMap.newKeySet();
 
     public SilentOpenCapability(Map<String, Object> config) {
         super(config);
@@ -35,12 +37,21 @@ public final class SilentOpenCapability extends VanishCapability implements List
         PacketEvents.INSTANCE.addListener(new PacketListener() {
             @Override
             public void onPacketSending(PacketEvent event) {
-                if (!silentViewers.contains(event.player().getUniqueId())) {
-                    return;
-                }
+                if (event.type() == ClientboundPacketTypes.BLOCK_EVENT) {
+                    ClientboundBlockEventWrapper wrapper = new ClientboundBlockEventWrapper(event);
+                    if (!silentViewers.contains(wrapper.getPosition().immutable())) {
+                        return;
+                    }
 
-                String packetName = event.type().name();
-                if (packetName.equals("BLOCK_EVENT") || packetName.equals("SOUND")) {
+                    event.cancelled(true);
+                } else if (event.type() == ClientboundPacketTypes.SOUND) {
+                    ClientboundSoundWrapper wrapper = new ClientboundSoundWrapper(event);
+                    ImmutableBlockPosition pos = new ImmutableBlockPosition(wrapper.getX(), wrapper.getY(), wrapper.getZ());
+                    LogUtils.debug("Position: {}", pos);
+                    if (!silentViewers.contains(pos)) {
+                        return;
+                    }
+
                     event.cancelled(true);
                 }
             }
@@ -74,20 +85,16 @@ public final class SilentOpenCapability extends VanishCapability implements List
         }
 
         event.setCancelled(true);
-        silentViewers.add(player.getUniqueId());
+        silentViewers.add(new ImmutableBlockPosition(block.getX(), block.getY(), block.getZ()));
 
         Scheduler.get().runAt(block.getLocation(), () -> {
-            if (!(block.getState() instanceof Container container)) {
-                silentViewers.remove(player.getUniqueId());
-                return;
+            if (block.getState() instanceof Container container) {
+                player.openInventory(container.getInventory());
             }
 
-            player.openInventory(container.getInventory());
+            Scheduler.get().runLaterAt(block.getLocation(), () -> {
+                silentViewers.remove(new ImmutableBlockPosition(block.getX(), block.getY(), block.getZ()));
+            }, 10L);
         });
-    }
-
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        Scheduler.get().run(() -> silentViewers.remove(event.getPlayer().getUniqueId()));
     }
 }
