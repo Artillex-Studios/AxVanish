@@ -4,6 +4,7 @@ import com.artillexstudios.axvanish.api.users.User;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class VanishStateManagerFactory {
+
     private final JavaPlugin plugin;
 
     public VanishStateManagerFactory(JavaPlugin plugin) {

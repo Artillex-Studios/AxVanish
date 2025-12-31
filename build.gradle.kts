@@ -33,19 +33,19 @@ subprojects {
     }
 
     dependencies {
-        implementation("com.artillexstudios.axapi:axapi:1.4.802:all")
-        compileOnly("com.github.ben-manes.caffeine:caffeine:3.2.2")
+        implementation("com.artillexstudios.axapi:axapi:1.4.830:all")
+        compileOnly("com.github.ben-manes.caffeine:caffeine:3.2.3")
         compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
-        compileOnly("dev.jorel:commandapi-paper-shade:11.0.0")
+        compileOnly("org.incendo:cloud-paper:2.0.0-beta.14")
         compileOnly("net.kyori:adventure-platform-bukkit:4.4.1")
-        compileOnly("org.apache.commons:commons-lang3:3.19.0")
-        compileOnly("commons-io:commons-io:2.20.0")
+        compileOnly("org.apache.commons:commons-lang3:3.20.0")
+        compileOnly("commons-io:commons-io:2.21.0")
         compileOnly("it.unimi.dsi:fastutil:8.5.18")
-        compileOnly("me.clip:placeholderapi:2.11.6")
+        compileOnly("me.clip:placeholderapi:2.11.7")
         compileOnly("com.h2database:h2:2.4.240")
         compileOnly("com.zaxxer:HikariCP:7.0.2")
         compileOnly("org.slf4j:slf4j-api:2.0.17")
-        compileOnly("org.jooq:jooq:3.20.8")
+        compileOnly("org.jooq:jooq:3.20.10")
         compileOnly("jakarta.xml.bind:jakarta.xml.bind-api:4.0.4")
     }
 }
@@ -57,7 +57,7 @@ tasks {
 
     shadowJar {
         relocate("com.artillexstudios.axapi", "com.artillexstudios.axvanish.libs.axapi")
-        relocate("dev.jorel.commandapi", "com.artillexstudios.axvanish.libs.commandapi")
+        relocate("org.incendo.cloud", "com.artillexstudios.axvanish.libs.cloud")
         relocate("com.github.benmanes", "com.artillexstudios.axvanish.libs.axapi.libs.caffeine")
         relocate("com.zaxxer", "com.artillexstudios.axvanish.libs.hikaricp")
         relocate("org.jooq", "com.artillexstudios.axvanish.libs.jooq")

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class Groups {
+
     private static final Groups INSTANCE = new Groups();
     private YamlConfiguration config = null;
     @Ignored
@@ -66,6 +67,7 @@ public final class Groups {
 
             groups.get(entry.getKey()).parent(parentGroup);
         }
+
         Groups.groups = groups;
         return true;
     }

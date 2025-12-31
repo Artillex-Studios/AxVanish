@@ -18,12 +18,14 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
 
 public final class DataHandler {
     private static final Table<Record> users = DSL.table("axvanish_users");
     private static final Field<Integer> id = DSL.field("id", int.class);
     private static final Field<UUID> uuid = DSL.field("uuid", UUID.class);
     private static final Field<Boolean> vanished = DSL.field("vanished", boolean.class);
+    private static final Executor ASYNC_EXECUTOR = AsyncUtils::submit;
 
     public static CompletionStage<Void> setup() {
         ArrayList<CompletableFuture<Integer>> futures = new ArrayList<>();
@@ -43,7 +45,7 @@ public final class DataHandler {
 
         if (Config.database.type == DatabaseType.SQLITE) {
             CompletableFuture<Integer> pragma = new CompletableFuture<>();
-            AsyncUtils.executor().submit(() -> {
+            AsyncUtils.submit(() -> {
                 DatabaseConnector.getInstance().context().fetch("PRAGMA journal_mode=WAL;");
                 DatabaseConnector.getInstance().context().execute("PRAGMA synchronous = off;");
                 DatabaseConnector.getInstance().context().execute("PRAGMA page_size = 32768;");
@@ -82,24 +84,22 @@ public final class DataHandler {
             User user = new User(Bukkit.getOfflinePlayer(uuid), null, null, false);
             Users.loadWithContext(user, context);
             return (com.artillexstudios.axvanish.api.users.User) user;
-        }, AsyncUtils.executor()).exceptionallyAsync(throwable -> {
+        }, ASYNC_EXECUTOR).exceptionallyAsync(throwable -> {
             LogUtils.error("Failed to load user data for player {}! Falling back to default user!", uuid, throwable);
             User user = new User(Bukkit.getOfflinePlayer(uuid), null, null, false);
             Users.loadWithContext(user, context);
             return user;
-        }, AsyncUtils.executor());
+        }, ASYNC_EXECUTOR);
     }
 
     public static void save(User user) {
-        CompletableFuture.runAsync(() -> {
-            DatabaseConnector.getInstance().context()
-                    .update(users)
-                    .set(DataHandler.vanished, user.vanished())
-                    .where(DataHandler.uuid.eq(user.player().getUniqueId()))
-                    .execute();
-        }, AsyncUtils.executor()).exceptionallyAsync(throwable -> {
+        CompletableFuture.runAsync(() -> DatabaseConnector.getInstance().context()
+                .update(users)
+                .set(DataHandler.vanished, user.vanished())
+                .where(DataHandler.uuid.eq(user.player().getUniqueId()))
+                .execute(), ASYNC_EXECUTOR).exceptionallyAsync(throwable -> {
             LogUtils.error("Failed to save user data for player {}!", user.player().getName(), throwable);
             return null;
-        }, AsyncUtils.executor());
+        }, ASYNC_EXECUTOR);
     }
 }

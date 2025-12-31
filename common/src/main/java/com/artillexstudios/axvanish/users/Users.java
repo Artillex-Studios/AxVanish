@@ -8,6 +8,7 @@ import com.artillexstudios.axvanish.exception.UserAlreadyLoadedException;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public final class Users {
     private static final ConcurrentHashMap<UUID, User> loadedUsers = new ConcurrentHashMap<>();
     private static final ConcurrentLinkedQueue<User> unsaved = new ConcurrentLinkedQueue<>();
-    private static final Cache<UUID, User> tempUsers = Caffeine.newBuilder()
+    private static final Cache<@NonNull UUID, User> tempUsers = Caffeine.newBuilder()
             .expireAfterAccess(5, TimeUnit.MINUTES)
             .maximumSize(200)
             .build();

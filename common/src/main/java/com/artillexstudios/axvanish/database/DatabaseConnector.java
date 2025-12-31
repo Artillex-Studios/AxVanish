@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public final class DatabaseConnector {
+
     private static final DatabaseConnector INSTANCE = new DatabaseConnector();
     private static final Logger log = LoggerFactory.getLogger(DatabaseConnector.class);
     private final DSLContext context;

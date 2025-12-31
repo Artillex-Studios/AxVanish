@@ -15,6 +15,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class VanishStateManager {
+
     private final JavaPlugin plugin;
     private final User user;
     private final CountDownLatch latch = new CountDownLatch(1);

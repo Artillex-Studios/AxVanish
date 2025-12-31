@@ -17,6 +17,7 @@ import org.bukkit.Bukkit;
 import revxrsal.zapper.repository.Repository;
 
 public final class AxVanishPlugin extends AxPlugin {
+
     private static AxVanishPlugin instance;
     private AxMetrics metrics;
     private VanishStateManagerFactory stateManagerFactory;
@@ -28,11 +29,11 @@ public final class AxVanishPlugin extends AxPlugin {
         manager.repository(Repository.jitpack());
         manager.repository("https://repo.codemc.org/repository/maven-public/");
         manager.repository("https://hub.spigotmc.org/nexus/content/repositories/snapshots/");
-        manager.dependency("dev{}jorel:commandapi-paper-shade:11.0.0");
+        manager.dependency("org{}incendo:cloud-paper:2.0.0-beta.14");
         manager.dependency("com{}h2database:h2:2.4.240");
         manager.dependency("com{}zaxxer:HikariCP:7.0.2");
-        manager.dependency("org{}jooq:jooq:3.20.8");
-        manager.relocate("dev{}jorel{}commandapi", "com.artillexstudios.axvanish.libs.commandapi");
+        manager.dependency("org{}jooq:jooq:3.20.10");
+        manager.relocate("org{}incendo{}cloud", "com.artillexstudios.axvanish.libs.cloud");
         manager.relocate("com{}zaxxer", "com.artillexstudios.axvanish.libs.hikaricp");
         manager.relocate("org{}jooq", "com.artillexstudios.axvanish.libs.jooq");
         manager.relocate("org{}h2", "com.artillexstudios.axvanish.libs.h2");
@@ -43,14 +44,12 @@ public final class AxVanishPlugin extends AxPlugin {
         FeatureFlags.PLACEHOLDER_API_HOOK.set(true);
         FeatureFlags.PLACEHOLDER_API_IDENTIFIER.set("axvanish");
         FeatureFlags.ASYNC_UTILS_POOL_SIZE.set(Config.asyncUtilsThreadCount);
-        FeatureFlags.ENABLE_PACKET_LISTENERS.set(false);
+        FeatureFlags.ENABLE_PACKET_LISTENERS.set(true);
     }
 
     @Override
     public void load() {
         instance = this;
-        this.command = new AxVanishCommand(this);
-        this.command.load();
 
         Config.reload();
         Language.reload();
@@ -63,9 +62,9 @@ public final class AxVanishPlugin extends AxPlugin {
     @Override
     public void enable() {
         this.stateManagerFactory = new VanishStateManagerFactory(this);
+        this.command = new AxVanishCommand(this);
         this.command.register();
         Groups.reload();
-        this.command.enable();
 
         Bukkit.getPluginManager().registerEvents(new PlayerListener(this), this);
         PlaceholderRegistry.INSTANCE.register();
@@ -74,7 +73,6 @@ public final class AxVanishPlugin extends AxPlugin {
     @Override
     public void disable() {
         this.metrics.cancel();
-        this.command.disable();
         AsyncUtils.stop();
     }
 

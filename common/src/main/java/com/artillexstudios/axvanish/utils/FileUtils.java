@@ -16,6 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public final class FileUtils {
+
     public static final Path PLUGIN_DIRECTORY = AxVanishPlugin.instance().getDataFolder().toPath();
     private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
 

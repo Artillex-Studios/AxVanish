@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class Config implements ConfigurationPart {
+
     private static final Config INSTANCE = new Config();
     public static Database database = new Database();
 

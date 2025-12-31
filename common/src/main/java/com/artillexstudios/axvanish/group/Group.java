@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class Group implements com.artillexstudios.axvanish.api.group.Group {
+
     private Group parent;
     private final String name;
     private final int priority;
